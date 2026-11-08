@@ -70,22 +70,20 @@ class ALU extends Module {
 
   io.flag := RegInit(0.U(8.W))
 
+  val temp = WireDefault(0.U(16.W))
+  val temps = WireDefault(0.S(16.W))
+  val temph = WireDefault(0.U(8.W))
+  val parity = WireDefault(0.U(8.W))
+
   var S = WireDefault(1.B)
   var Z = WireDefault(1.B)
   var H = WireDefault(1.B)
   var PV = WireDefault(1.B)
-  var X = WireDefault(1.B)
+  var Y = WireDefault(temp(5))
+  var X = WireDefault(temp(3))
   var N = WireDefault(1.B)
   var C = WireDefault(1.B)
 
-  val temp = WireDefault(0.U(16.W))
-  val temps = WireDefault(0.S(16.W))
-
-  val temph = WireDefault(0.U(8.W))
-
-  val parity = WireDefault(0.U(8.W))
-
-  
   switch(io.calc_type(7,4)) {
     is(add_adc_op)  {
         temp := Cat(0.U(1.W), io.input_A) + Cat(0.U(1.W), io.input_B) + (io.calc_type(3) & io.input_carry)
@@ -107,7 +105,7 @@ class ALU extends Module {
     }
     is(and_xor_op) {
       temp := Mux(io.calc_type(3), io.input_A ^ io.input_B , io.input_A & io.input_B) 
-      H := Mux(io.calc_type === and_op, 1.U, 0.U)
+      H := 1.U
       PV := getParity(temp)
       N := 0.U
       C := 0.U
@@ -117,7 +115,7 @@ class ALU extends Module {
       switch(io.calc_type) {
         is(or_op) {
           temp := io.input_A | io.input_B
-          H := 0.U
+          H := 1.U
           PV := getParity(temp)
           N := 0.U
           C := 0.U
@@ -129,6 +127,8 @@ class ALU extends Module {
           H := temph(4)
 //          PV := (io.input_A(7) | io.input_B(7))^temp(7)
           PV := (io.input_A(7) ^ io.input_B(7)) & (io.input_A(7) ^ temp(7))
+          Y := io.input_B(5)
+          X := io.input_B(3)
           N := 1.B
           C := temp(8)
           io.output_C := io.input_A  // no change
@@ -168,6 +168,5 @@ class ALU extends Module {
   S := temp(7)
   Z := (temp(7,0) === 0.U(8.W))
 
-  io.flag := Cat(S, Z, X, H, X, PV, N, C)
+  io.flag := Cat(S, Z, Y, H, X, PV, N, C)
 }
-

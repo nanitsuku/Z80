@@ -32,7 +32,7 @@ lazy val root = (project in file("."))
     scalacOptions ++= Seq(
       "-Xsource:2.11",
       "-language:reflectiveCalls",
-      "-deprecation",
+//      "-deprecation",
       "-feature",
       "-Xcheckinit",
       "-unchecked",
